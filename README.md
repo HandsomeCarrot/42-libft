@@ -126,4 +126,4 @@ Completed (116/100 pts)
 
 ## License
 
-This project does not specify a license. The code is part of the 42 School curriculum and follows the school's academic policies. If you wish to use this code, please contact the repository owner for clarification on usage rights and permissions.
+This project does not specify a license.
