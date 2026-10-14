@@ -1,19 +1,23 @@
+# ---- toolchain ----
 NAME = libft.a
 
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -g
+CFLAGS = -Wall -Wextra -Werror
 CPPFLAGS = -Iinc
 DEPFLAGS = -MMD -MP
+COMPILE = $(CC) $(CFLAGS) $(CPPFLAGS) $(DEPFLAGS)
 
-AR = ar
-ARFLAGS = -rcs
+AR = ar -rcs
+
 RM = rm -rf
 
+# ---- directories ----
 SRCDIR = src
 BONUSDIR = src/bonus
 OBJDIR = obj
 INCDIR = inc
 
+# ---- sources ----
 SRCS =	ft_atoi.c \
 	ft_bzero.c \
 	ft_calloc.c \
@@ -67,27 +71,57 @@ BONUS_OBJS := $(BONUS_SRCS:%.c=$(OBJDIR)/%.o)
 
 DEPS := $(OBJS:.o=.d) $(BONUS_OBJS:.o=.d)
 
+# ---- output ----
+C_HL = \033[1;36m
+C_DIM = \033[2m
+C_RESET = \033[0m
+
+START_NS := $(shell date +%s%N)
+
+# $(1) action, $(2) file name, $(3) flags -> one aligned status line
+define say
+printf '  $(C_DIM)%-10s$(C_RESET)  $(C_HL)%-24s$(C_RESET)  $(C_DIM)%s$(C_RESET)\n' '$(1)' '$(2)' '$(3)'
+endef
+
+# no arguments -> one blank line
+define say_gap
+printf '\n'
+endef
+
+# ---- build ----
+PHONY += all
 all: $(NAME)
+	@$(call say_gap)
 
 $(NAME): $(OBJS)
-	$(AR) $(ARFLAGS) $@ $^
+	@$(call say,archiving,$(NAME),$(AR))
+	@$(AR) $@ $^
 
+PHONY += bonus
 bonus: $(NAME) $(BONUS_OBJS)
-	$(AR) $(ARFLAGS) $(NAME) $(BONUS_OBJS)
+	@$(call say,adding,$(NAME),$(AR))
+	@$(AR) $(NAME) $(BONUS_OBJS)
 
 $(OBJDIR)/%.o: %.c
 	@mkdir -p $(@D)
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(DEPFLAGS) -c $< -o $@
+	@$(call say,compiling,$(notdir $<),$(COMPILE))
+	@$(COMPILE) -c $< -o $@
 
+# ---- housekeeping ----
+PHONY += clean
 clean:
-	$(RM) $(OBJDIR)
+	@$(call say,removing,obj/,$(RM))
+	@$(RM) $(OBJDIR)
 
+PHONY += fclean
 fclean: clean
-	$(RM) $(NAME)
+	@$(call say,removing,$(NAME),$(RM))
+	@$(RM) $(NAME)
 
-re: fclean all
+PHONY += re
+re: fclean
+	@$(MAKE) --no-print-directory all
 
-.PHONY: all bonus clean fclean re
+.PHONY: $(PHONY)
 
 -include $(DEPS)
-
